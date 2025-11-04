@@ -23,7 +23,7 @@ def input_equation():
 
 if __name__ == "__main__":
     formula_tree_left, formula_tree_right, solution = input_equation()
-    # solution.variables['x'].set_domain(-100, 100)
+    solution.variables['x'].set_domain(-100, 100)
 
     solver = GASolver(
         solution_template=solution,
