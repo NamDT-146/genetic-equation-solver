@@ -1,14 +1,13 @@
 import random
 import math
 from copy import deepcopy
-from parse import Solution, Variable
 
 class Mutation:
     
     def __init__(self, config=None):
         self.config = config or {}
         self.rate = self.config.get('rate', 0.1)  
-        self.method = self.config.get('method', 'gaussian')
+        self.method = self.config.get('method', 'uniform')
         self.scale = self.config.get('scale', 0.1) 
         self.uniform_range = self.config.get('uniform_range', 0.1)  
     
@@ -49,11 +48,8 @@ class Mutation:
         delta = random.gauss(0, std_dev)
         new_value = current_value + delta
         
-        attempts = 0
-        while not variable.is_in_domain(new_value) and attempts < 5:
-            delta = random.gauss(0, std_dev)
-            new_value = current_value + delta
-            attempts += 1
+        # Clip the new value to be within the domain
+        new_value = max(variable.domain_min, min(variable.domain_max, new_value))
         
         if variable.is_in_domain(new_value):
             variable.current_value = new_value
@@ -66,12 +62,9 @@ class Mutation:
         delta = random.uniform(-max_delta, max_delta)
         new_value = current_value + delta
         
-        attempts = 0
-        while not variable.is_in_domain(new_value) and attempts < 5:
-            delta = random.uniform(-max_delta, max_delta)
-            new_value = current_value + delta
-            attempts += 1
-        
+        # Clip the new value to be within the domain
+        new_value = max(variable.domain_min, min(variable.domain_max, new_value))
+
         if variable.is_in_domain(new_value):
             variable.current_value = new_value
     

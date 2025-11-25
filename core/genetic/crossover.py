@@ -1,12 +1,11 @@
 import random
 import math
 from copy import deepcopy
-from parse import Solution, Variable
 
 class Crossover:    
     def __init__(self, config=None):
         self.config = config or {}
-        self.method = self.config.get('method', 'arithmetic')
+        self.method = self.config.get('method', 'uniform')
         self.rate = self.config.get('rate', 0.8)  
         self.alpha = self.config.get('alpha', 0.5) 
     
@@ -59,21 +58,24 @@ class Crossover:
                         
                     if val2 is not None and child1.variables[var_name].is_in_domain(val2):
                         child1.variables[var_name].current_value = val2
-    
+        
     def _arithmetic_crossover(self, child1, child2, var_names):
-        for var_name in var_names:
-            if var_name in child1.variables and var_name in child2.variables:
-                val1 = child1.variables[var_name].current_value
-                val2 = child2.variables[var_name].current_value
-                
-                if val1 is None or val2 is None:
-                    continue
-                
-                new_val1 = self.alpha * val1 + (1 - self.alpha) * val2
-                new_val2 = self.alpha * val2 + (1 - self.alpha) * val1
-                
-                if child1.variables[var_name].is_in_domain(new_val1):
-                    child1.variables[var_name].current_value = new_val1
-                
-                if child2.variables[var_name].is_in_domain(new_val2):
-                    child2.variables[var_name].current_value = new_val2
+            for var_name in var_names:
+                if var_name in child1.variables and var_name in child2.variables:
+                    val1 = child1.variables[var_name].current_value
+                    val2 = child2.variables[var_name].current_value
+                    
+                    if val1 is None or val2 is None:
+                        continue
+                    
+                    new_val1 = self.alpha * val1 + (1 - self.alpha) * val2
+                    new_val2 = self.alpha * val2 + (1 - self.alpha) * val1
+
+                    # Clip values to the domain boundaries
+                    domain_min1 = child1.variables[var_name].domain_min
+                    domain_max1 = child1.variables[var_name].domain_max
+                    child1.variables[var_name].current_value = max(domain_min1, min(domain_max1, new_val1))
+
+                    domain_min2 = child2.variables[var_name].domain_min
+                    domain_max2 = child2.variables[var_name].domain_max
+                    child2.variables[var_name].current_value = max(domain_min2, min(domain_max2, new_val2))

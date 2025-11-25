@@ -1,10 +1,10 @@
-from parser.string_to_tree import parse_formula, NodeType, FormulaTree
+from .parser.string_to_tree import parse_formula, NodeType, FormulaTree
 
 class Variable:
     def __init__(self, name, excluded_values=None, current_value=None):
         self.name = name
-        self.domain_min = float('-inf')
-        self.domain_max = float('inf')
+        self.domain_min = -1000
+        self.domain_max = 1000
         self.excluded_values = excluded_values if excluded_values else []
         self.current_value = current_value
     
