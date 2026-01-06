@@ -902,7 +902,7 @@ For questions, issues, or suggestions:
 
 - **Issues**: Open an issue on GitHub
 - **Discussions**: Use GitHub Discussions for general questions
-- **Email**: your.email@example.com
+- **Email**: namdotuan146@gmail.com
 
 ---
 
