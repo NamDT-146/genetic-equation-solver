@@ -44,6 +44,7 @@ class SolverGUI:
         self.domain_entries = {}
         self.detected_domains = {}
         self.visualization_queue = Queue(maxsize=100)
+        self.current_equation = ""  # Add this line
         
         self.viz_var_1 = tk.StringVar()
         self.viz_var_2 = tk.StringVar()
@@ -133,6 +134,7 @@ class SolverGUI:
         tabs = ttk.Notebook(right)
         tabs.pack(fill="both", expand=True)
 
+        # Solutions tab - only shows current equation results
         log_tab = ttk.Frame(tabs)
         tabs.add(log_tab, text="Solutions")
         self.log_text = scrolledtext.ScrolledText(log_tab, font=("Consolas", 10), state='disabled')
@@ -142,11 +144,13 @@ class SolverGUI:
         tabs.add(viz_tab, text="Visualization")
         self._build_visualization_tab(viz_tab)
 
+        # History tab - shows all execution logs
         hist_tab = ttk.Frame(tabs)
         tabs.add(hist_tab, text="History")
-        self.hist_list = tk.Listbox(hist_tab, font=("Consolas", 10))
-        self.hist_list.pack(fill="both", expand=True, padx=5, pady=5)
-        self.hist_list.bind("<Double-Button-1>", self.load_history)
+        
+        # Change history to show execution log instead of listbox
+        self.history_text = scrolledtext.ScrolledText(hist_tab, font=("Consolas", 10), state='disabled')
+        self.history_text.pack(fill="both", expand=True, padx=5, pady=5)
 
         self.status_var = tk.StringVar(value="Ready")
         ttk.Label(self.root, textvariable=self.status_var, relief="sunken", anchor="w").pack(fill="x", side="bottom")
@@ -366,18 +370,34 @@ class SolverGUI:
         else: e.insert('insert', txt)
 
     def log(self, msg):
+        """Log to Solutions tab (current equation only)"""
         self.log_text.configure(state='normal')
         self.log_text.insert('end', msg + '\n')
         self.log_text.see('end')
         self.log_text.configure(state='disabled')
 
+    def log_history(self, msg):
+        """Log to History tab (all executions)"""
+        self.history_text.configure(state='normal')
+        self.history_text.insert('end', msg + '\n')
+        self.history_text.see('end')
+        self.history_text.configure(state='disabled')
+
     def analyze_equation(self):
         """Analyze equation and display variable domains"""
         eq = self.equation_var.get().strip()
+        
+        # Clear solutions tab when equation changes
+        if eq != self.current_equation:
+            self.current_equation = eq
+            self.log_text.configure(state='normal')
+            self.log_text.delete(1.0, tk.END)
+            self.log_text.configure(state='disabled')
+        
         if '=' not in eq:
             messagebox.showerror("Error", "Equation must contain '='")
             return
-
+        
         try:
             left_str, right_str = [s.strip() for s in eq.split('=', 1)]
             left_tree = parse_formula(left_str)
@@ -565,6 +585,12 @@ class SolverGUI:
     def _solve_worker(self):
         try:
             self.root.after(0, lambda: self.status_var.set("Parsing..."))
+            
+            # Log to history tab
+            self.root.after(0, lambda: self.log_history(f"\n{'='*80}"))
+            self.root.after(0, lambda: self.log_history(f"Starting solve for: {self.equation_var.get()}"))
+            self.root.after(0, lambda: self.log_history(f"{'='*80}"))
+            
             left_str, right_str = [s.strip() for s in self.equation_var.get().split('=', 1)]
             left_tree = parse_formula(left_str)
             right_tree = parse_formula(right_str or "0")
@@ -585,11 +611,12 @@ class SolverGUI:
                 tournament_size=self.param_vars[2].get(),
                 elitism_size=self.param_vars[3].get(),
                 visualization_queue=self.visualization_queue,
-                visualization_interval=2  # Push every 2 generations
+                visualization_interval=2
             )
 
             def gui_print(*a):
-                self.root.after(0, lambda: self.log(' '.join(map(str, a))))
+                msg = ' '.join(map(str, a))
+                self.root.after(0, lambda: self.log_history(msg))  # Log all output to history
             import builtins
             old_print = builtins.print
             builtins.print = gui_print
@@ -599,7 +626,6 @@ class SolverGUI:
             elapsed = time.time() - start
             builtins.print = old_print
 
-            # Mark solving as complete
             self.is_solving = False
 
             result_lines = []
@@ -610,18 +636,20 @@ class SolverGUI:
             result = "\n".join(result_lines)
             
             self.history.append({"eq": self.equation_var.get(), "result": result, "time": elapsed})
-            self.root.after(0, self._update_history)
             self.root.after(0, self._show_results, solutions, elapsed)
 
         except Exception as e:
             import traceback
             self.is_solving = False
-            self.root.after(0, lambda: self.log(f"ERROR: {traceback.format_exc()}"))
+            error_msg = f"ERROR: {traceback.format_exc()}"
+            self.root.after(0, lambda: self.log(error_msg))
+            self.root.after(0, lambda: self.log_history(error_msg))
         finally:
             self.is_solving = False
             self.root.after(0, self._reset_ui)
 
     def _show_results(self, solutions, elapsed):
+        # Log to Solutions tab (current equation only)
         self.log("\n" + "="*80)
         self.log(f"SOLVER FINISHED in {elapsed:.2f}s")
         self.log(f"FOUND {len(solutions)} SOLUTION(S):\n")
@@ -631,6 +659,18 @@ class SolverGUI:
                 self.log(f"   {var_name} = {var.current_value:.12f}")
             err = s.calculate_heuristic()
             self.log(f"   Error = {err:.2e}\n")
+        
+        # Also log to History tab
+        self.log_history("\n" + "="*80)
+        self.log_history(f"SOLVER FINISHED in {elapsed:.2f}s")
+        self.log_history(f"FOUND {len(solutions)} SOLUTION(S):\n")
+        for i, s in enumerate(solutions, 1):
+            self.log_history(f" SOLUTION #{i}")
+            for var_name, var in sorted(s.variables.items()):
+                self.log_history(f"   {var_name} = {var.current_value:.12f}")
+            err = s.calculate_heuristic()
+            self.log_history(f"   Error = {err:.2e}\n")
+
 
     def _reset_ui(self):
         self.progress['value'] = 100

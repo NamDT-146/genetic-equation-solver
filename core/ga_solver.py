@@ -216,6 +216,8 @@ class GASolver:
             fitness = refined_solution.calculate_heuristic() or float('inf')
             self.island_fitness[island_idx].append(fitness)
 
+    # ...existing code...
+
     def local_search(self, solution, max_iterations=10, step_size=0.01, min_improvement=1e-8):
         import math
         
@@ -298,6 +300,10 @@ class GASolver:
                     if fitness_neg is None:
                         fitness_neg = float('inf')
                     
+                    # Initialize new_value and new_fitness to defaults
+                    new_value = original_value
+                    new_fitness = current_fitness
+                    
                     if fitness_pos < current_fitness and fitness_pos <= fitness_neg:
                         new_value = test_value_pos
                         new_fitness = fitness_pos
@@ -340,11 +346,13 @@ class GASolver:
                             
                             adaptive_step *= 0.5
                         
+                        # If still not improved after adaptive search, restore original
                         if not improved:
                             variable.set_value(original_value)
                             continue
                     
-                    if improved:
+                    # Only apply new_value if we actually improved
+                    if improved and new_value != original_value:
                         variable.set_value(new_value)
                         current_fitness = new_fitness
                         if new_fitness < best_fitness:
@@ -420,12 +428,19 @@ class GASolver:
 
     def force_island_diversity(self, island_idx, threshold):
         island = self.islands[island_idx]
+        
+        # Check if island is empty or too small
+        if len(island) < 2:
+            return
+        
         diversity = self.compute_island_diversity(island)
         max_attempts = 5
         attempts = 0
         while diversity < threshold and attempts < max_attempts:
             num_reinit = max(1, int(0.3 * len(island)))
             for _ in range(num_reinit):
+                if len(island) == 0:
+                    break
                 idx = random.randint(0, len(island)-1)
                 new_solution = copy.deepcopy(self.solution_template)
                 for var_name, variable in new_solution.variables.items():
@@ -434,6 +449,10 @@ class GASolver:
                     variable.set_value(random.uniform(domain_min, domain_max))
                 island[idx] = self.local_search(new_solution)
             self.island_fitness[island_idx] = [sol.calculate_heuristic() or float('inf') for sol in island]
+            
+            # Check again after reinit
+            if len(island) < 2:
+                break
             diversity = self.compute_island_diversity(island)
             attempts += 1
 
@@ -442,6 +461,11 @@ class GASolver:
             return
         island = self.islands[island_idx]
         fit = self.island_fitness[island_idx]
+        
+        # Check if island is empty
+        if len(island) == 0:
+            return
+        
         next_island = self.islands[island_idx+1]
         next_fit = self.island_fitness[island_idx+1]
         arr = np.array([f for f in fit if f != float('inf')])
@@ -454,8 +478,9 @@ class GASolver:
             next_island.append(promoted)
             next_fit.append(promoted.calculate_heuristic() or float('inf'))
         for i in sorted(sorted_idx[:num_promote], reverse=True):
-            del island[i]
-            del fit[i]
+            if i < len(island):
+                del island[i]
+                del fit[i]
 
     def ga_step(self):
         best_solutions = []
@@ -520,6 +545,12 @@ class GASolver:
                     del island_fit[idx]
             
             total_removed += len(to_remove)
+            
+            # Replenish if island becomes too small
+            min_island_size = max(5, self.island_size // 4)
+            if len(island) < min_island_size:
+                num_to_add = min_island_size - len(island)
+                self.add_random_individuals(island_idx, num_to_add)
         
         return total_removed
 
@@ -540,10 +571,6 @@ class GASolver:
             if fitness < self.eps:
                 removed_count = self.graduate_solution(solution, fitness)
                 if removed_count > 0:
-                    per_island = max(1, removed_count // self.num_islands)
-                    for island_idx in range(self.num_islands):
-                        self.add_random_individuals(island_idx, per_island)
-                    
                     stable_count = 0
                     total_population_size = sum(len(island) for island in self.islands)
                     continue            
@@ -558,7 +585,9 @@ class GASolver:
                     mutation.rate = min(0.8, mutation.rate * 1.2) 
             if stable_count >= 100:
                 for island_idx in range(self.num_islands):
-                    self.add_random_individuals(island_idx, self.island_size // 2)
+                    current_size = len(self.islands[island_idx])
+                    if current_size > 0:
+                        self.add_random_individuals(island_idx, max(1, current_size // 2))
                 
                 for mutation in self.island_mutations:
                     mutation.rate = 0.2  
@@ -566,7 +595,9 @@ class GASolver:
                 
             if stable_count % 10 == 0 and stable_count > 0:
                 for island_idx in range(self.num_islands):
-                    self.add_random_individuals(island_idx, max(1, self.island_size // 20))
+                    current_size = len(self.islands[island_idx])
+                    if current_size > 0:
+                        self.add_random_individuals(island_idx, max(1, current_size // 20))
             
             total_population_size = sum(len(island) for island in self.islands)
         

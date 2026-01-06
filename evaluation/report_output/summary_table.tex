@@ -1,0 +1,27 @@
+\begin{table}[H]
+\centering
+\caption{Benchmark Performance Summary}
+\label{tab:benchmark_summary}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lp{5cm}cccc}
+\toprule
+Problem & Equation & Success Rate & Mean Error & Std Error & Mean Time (s) \\
+\midrule
+Broyden\_Tridiagonal\_2D & $\scriptstyle (x\cdot (3-2\cdot x)-0-2\cdot y+1)+(y\cdot (3-2\cdot y)-x...$ & 100.0\% & 4.09e-07 & 2.34e-07 & 20.2 \\
+Broyden\_Tridiagonal\_3D & $\scriptstyle (x\cdot (3-2\cdot x)-0-2\cdot y+1)+(y\cdot (3-2\cdot y)-x...$ & 100.0\% & 9.67e-08 & 6.64e-08 & 20.3 \\
+Broyden\_Tridiagonal\_5D & $\scriptstyle (x\cdot (3-2\cdot x)-0-2\cdot y+1)+(y\cdot (3-2\cdot y)-x...$ & 0.0\% & 4.21e+00 & 4.06e+00 & 31.7 \\
+Circle\_Line\_Intersection & $\scriptstyle x^{2}+y^{2}-25=0$ & 100.0\% & 3.59e-07 & 1.93e-07 & 16.0 \\
+Cubic & $\scriptstyle x^{3}-6\cdot x^{2}+11\cdot x-6=0$ & 100.0\% & 1.07e-07 & 1.00e-07 & 3.8 \\
+Exponential\_Simple & $\scriptstyle 2^{x}-8=0$ & 100.0\% & 3.84e-07 & 2.39e-07 & 24.3 \\
+Mixed\_Transcendental & $\scriptstyle \sqrt{(x+25)+\log(49-x)=25}$ & 0.0\% & 1.46e+01 & 1.78e-15 & 30.2 \\
+Powell\_Singular\_2D & $\scriptstyle x+10\cdot y=0$ & 100.0\% & 1.66e-12 & 3.08e-12 & 15.3 \\
+Quadratic & $\scriptstyle x^{2}-4=0$ & 100.0\% & 3.35e-07 & 2.61e-07 & 3.4 \\
+Rosenbrock\_Roots & $\scriptstyle 10\cdot (y-x^{2})+(1-x)=0$ & 100.0\% & 2.64e-07 & 2.34e-07 & 21.8 \\
+Sum\_of\_Squares\_2D & $\scriptstyle x^{2}+y^{2}-2=0$ & 100.0\% & 7.99e-08 & 6.35e-08 & 5.2 \\
+Sum\_of\_Squares\_3D & $\scriptstyle x^{2}+y^{2}+z^{2}-3=0$ & 100.0\% & 6.26e-08 & 4.01e-08 & 13.4 \\
+Sum\_of\_Squares\_4D & $\scriptstyle x^{2}+y^{2}+z^{2}+w^{2}-4=0$ & 100.0\% & 6.79e-08 & 6.70e-08 & 19.6 \\
+Trigonometric\_Basic & $\scriptstyle \sin(x)=0.5$ & 100.0\% & 9.58e-08 & 6.62e-08 & 21.1 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

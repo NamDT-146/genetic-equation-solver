@@ -1,0 +1,28 @@
+\begin{table}[H]
+\centering
+\caption{Benchmark Problem Suite}
+\label{tab:benchmark_problems}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llccp{6cm}}
+\toprule
+Category & Problem & Dim & Difficulty & Equation \\
+\midrule
+Classical & Circle\_Line\_Intersection & 2D & Medium & $\displaystyle x^{2}+y^{2}-25=0$ \\
+Classical & Cubic & 1D & Easy & $\displaystyle x^{3}-6\cdot x^{2}+11\cdot x-6=0$ \\
+Classical & Exponential\_Simple & 1D & Easy & $\displaystyle 2^{x}-8=0$ \\
+Classical & Mixed\_Transcendental & 1D & Hard & $\displaystyle \sqrt{x+25)+\log(49-x)=25}$ \\
+Classical & Powell\_Singular\_2D & 2D & Hard & $\displaystyle x+10\cdot y=0$ \\
+Classical & Quadratic & 1D & Easy & $\displaystyle x^{2}-4=0$ \\
+Classical & Rosenbrock\_Roots & 2D & Hard & $\displaystyle 10\cdot (y-x^{2})+(1-x)=0$ \\
+Classical & Trigonometric\_Basic & 1D & Medium & $\displaystyle \sin(x)=0.5$ \\
+\midrule
+Scalable & Broyden\_Tridiagonal\_2D & 2D & Hard & $\displaystyle (x\cdot (3-2\cdot x)-0-2\cdot y+1)+(y\cdot (3-2\cdot y)-x-2\cdot 0+1)=0$ \\
+Scalable & Broyden\_Tridiagonal\_3D & 3D & Hard & $\displaystyle (x\cdot (3-2\cdot x)-0-2\cdot y+1)+(y\cdot (3-2\cdot y)-x-2\cdot z+1)+(z\cdot (3-2\cdot z)-y-2\cd...$ \\
+Scalable & Broyden\_Tridiagonal\_5D & 5D & Hard & $\displaystyle (x\cdot (3-2\cdot x)-0-2\cdot y+1)+(y\cdot (3-2\cdot y)-x-2\cdot z+1)+(z\cdot (3-2\cdot z)-y-2\cd...$ \\
+Scalable & Sum\_of\_Squares\_2D & 2D & Medium & $\displaystyle x^{2}+y^{2}-2=0$ \\
+Scalable & Sum\_of\_Squares\_3D & 3D & Medium & $\displaystyle x^{2}+y^{2}+z^{2}-3=0$ \\
+Scalable & Sum\_of\_Squares\_4D & 4D & Medium & $\displaystyle x^{2}+y^{2}+z^{2}+w^{2}-4=0$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
